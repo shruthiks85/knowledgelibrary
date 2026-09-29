@@ -28,6 +28,62 @@ function formatDate(iso: string) {
 }
 
 function Index() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    if (!supabaseConfigured) {
+      setAuthReady(true);
+      return;
+    }
+    const auth = getSupabase().auth;
+    const { data: sub } = auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+      setAuthReady(true);
+    });
+    void auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAuthReady(true);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  return (
+    <main className="min-h-screen bg-background text-foreground" style={{ fontFamily: "Figtree, sans-serif" }}>
+      <div className="mx-auto max-w-2xl px-5 py-16 sm:py-24">
+        <header className="mb-10 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl" style={{ fontFamily: "Fraunces, serif" }}>
+              My Knowledge Library
+            </h1>
+            <p className="mt-3 text-lg text-muted-foreground">Save things you want to find later.</p>
+          </div>
+          {session && (
+            <div className="shrink-0 text-right text-sm">
+              <p className="text-muted-foreground">{session.user.email}</p>
+              <button onClick={() => void getSupabase().auth.signOut()} className="mt-1 underline">
+                Log out
+              </button>
+            </div>
+          )}
+        </header>
+        {!authReady ? (
+          <p className="text-muted-foreground">Loading…</p>
+        ) : !supabaseConfigured ? (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
+            The library isn't connected to the database yet.
+          </div>
+        ) : session ? (
+          <Library key={session.user.id} />
+        ) : (
+          <AuthScreen />
+        )}
+      </div>
+    </main>
+  );
+}
+
+function Library() {
   const [items, setItems] = useState<SavedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -51,8 +107,7 @@ function Index() {
   }
 
   useEffect(() => {
-    if (supabaseConfigured) void load();
-    else setLoading(false);
+    void load();
   }, []);
 
   async function onSubmit(e: FormEvent) {
