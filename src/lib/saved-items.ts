@@ -51,6 +51,7 @@ export async function createSavedItem(url: string, sourceType: SourceType): Prom
     .select("id, url, source_type, title, notes, created_at")
     .single();
   if (error) {
+    if (error.code === "23505") throw new Error("You've already saved this URL.");
     console.error("[saved_items] insert failed", error);
     throw new Error("Couldn't save this URL. Please try again.");
   }

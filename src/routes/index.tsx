@@ -114,6 +114,7 @@ function Library() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (saving) return;
     setFormError(null);
     setSaved(false);
     let parsed;
