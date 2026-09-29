@@ -149,21 +149,8 @@ function Library() {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground" style={{ fontFamily: "Figtree, sans-serif" }}>
-      <div className="mx-auto max-w-2xl px-5 py-16 sm:py-24">
-        <header className="mb-10">
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl" style={{ fontFamily: "Fraunces, serif" }}>
-            My Knowledge Library
-          </h1>
-          <p className="mt-3 text-lg text-muted-foreground">Save things you want to find later.</p>
-        </header>
+    <>
 
-        {!supabaseConfigured && (
-          <div className="mb-8 rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm">
-            The library isn't connected to the database yet. Add <code>VITE_SUPABASE_URL</code> and{" "}
-            <code>VITE_SUPABASE_ANON_KEY</code> to the project's environment settings.
-          </div>
-        )}
 
         <form onSubmit={onSubmit} className="flex flex-col gap-3 sm:flex-row">
           <input
