@@ -166,7 +166,7 @@ function Library() {
           />
           <button
             type="submit"
-            disabled={saving || !supabaseConfigured}
+            disabled={saving}
             className="h-12 rounded-lg bg-primary px-6 font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {saving ? "Saving…" : "Save"}
@@ -186,7 +186,7 @@ function Library() {
               <p className="text-destructive">{loadError}</p>
               <button onClick={() => void load()} className="mt-2 underline">Try again</button>
             </div>
-          ) : items.length === 0 && supabaseConfigured ? (
+          ) : items.length === 0 ? (
             <div className="rounded-lg border border-dashed border-border p-10 text-center">
               <p className="font-medium">Nothing saved yet.</p>
               <p className="mt-1 text-sm text-muted-foreground">
