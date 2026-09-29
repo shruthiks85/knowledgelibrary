@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { supabaseConfigured } from "@/lib/supabase";
+import type { Session } from "@supabase/supabase-js";
+import { getSupabase, supabaseConfigured } from "@/lib/supabase";
+import { AuthScreen } from "@/components/AuthScreen";
 import {
   createSavedItem,
   deleteSavedItem,
@@ -221,7 +223,6 @@ function Library() {
             </ul>
           )}
         </section>
-      </div>
-    </main>
+    </>
   );
 }
