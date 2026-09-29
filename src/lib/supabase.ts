@@ -12,7 +12,10 @@ export function getSupabase(): SupabaseClient {
     throw new Error("Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
   }
   if (!client) {
-    client = createClient(url, anonKey, { auth: { persistSession: false } });
+    const isBrowser = typeof window !== "undefined";
+    client = createClient(url, anonKey, {
+      auth: { persistSession: isBrowser, autoRefreshToken: isBrowser, detectSessionInUrl: isBrowser },
+    });
   }
   return client;
 }

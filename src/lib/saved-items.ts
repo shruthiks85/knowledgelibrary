@@ -42,9 +42,12 @@ export async function listSavedItems(): Promise<SavedItem[]> {
 }
 
 export async function createSavedItem(url: string, sourceType: SourceType): Promise<SavedItem> {
-  const { data, error } = await getSupabase()
+  const supabase = getSupabase();
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  if (userError || !userData.user) throw new Error("Please log in again to save items.");
+  const { data, error } = await supabase
     .from("saved_items")
-    .insert({ url, source_type: sourceType, created_at: new Date().toISOString() })
+    .insert({ url, source_type: sourceType, user_id: userData.user.id, created_at: new Date().toISOString() })
     .select("id, url, source_type, title, notes, created_at")
     .single();
   if (error) {
