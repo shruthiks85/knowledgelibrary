@@ -72,3 +72,32 @@ export async function deleteSavedItem(id: string): Promise<void> {
     throw new Error("Couldn't delete this item. It may not be allowed by your database settings.");
   }
 }
+/* Test the YouTube enrichment function by invoking it with a saved item ID. This function checks if the user is logged in, then calls the "enrich-youtube" Supabase function with the provided saved item ID. It handles errors and logs the result. */
+export async function testYouTubeEnrichment(savedItemId: string) {
+  const supabase = getSupabase();
+
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  if (sessionError || !sessionData.session) {
+    throw new Error("You must be logged in to test YouTube enrichment.");
+  }
+
+  const { data, error } = await supabase.functions.invoke(
+    "enrich-youtube",
+    {
+      body: {
+        saved_item_id: savedItemId,
+      },
+    },
+  );
+
+  if (error) {
+    console.error("[enrich-youtube] failed", error);
+    throw error;
+  }
+
+  console.log("[enrich-youtube] result", data);
+
+  return data;
+}

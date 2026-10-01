@@ -7,6 +7,7 @@ import {
   createSavedItem,
   deleteSavedItem,
   listSavedItems,
+  testYouTubeEnrichment, // import the testYouTubeEnrichment function
   parseUrl,
   type SavedItem,
 } from "@/lib/saved-items";
@@ -112,7 +113,7 @@ function Library() {
     void load();
   }, []);
 
-  async function onSubmit(e: FormEvent) {
+  /*async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (saving) return;
     setFormError(null);
@@ -136,7 +137,46 @@ function Library() {
     } finally {
       setSaving(false);
     }
+  }*/
+ async function onSubmit(e: FormEvent) {
+  e.preventDefault();
+
+  if (saving) return;
+
+  setFormError(null);
+  setSaved(false);
+
+  let parsed;
+
+  try {
+    parsed = parseUrl(input);
+  } catch (err) {
+    setFormError((err as Error).message);
+    return;
   }
+
+  setSaving(true);
+
+  try {
+    const item = await createSavedItem(parsed.url, parsed.sourceType);
+
+    if (parsed.sourceType === "youtube") {
+      const enrichmentResult = await testYouTubeEnrichment(item.id);
+      console.log("YouTube enrichment result:", enrichmentResult);
+    }
+
+    setInput("");
+    setSaved(true);
+
+    setTimeout(() => setSaved(false), 2000);
+
+    await load();
+  } catch (err) {
+    setFormError((err as Error).message);
+  } finally {
+    setSaving(false);
+  }
+}
 
   async function onDelete(id: string) {
     setDeleteError(null);
