@@ -41,7 +41,60 @@ export async function listSavedItems(): Promise<SavedItem[]> {
   return data ?? [];
 }
 
-export async function createSavedItem(url: string, sourceType: SourceType): Promise<SavedItem> {
+export async function createSavedItem(
+  url: string,
+  sourceType: SourceType,
+): Promise<SavedItem> {
+  const supabase = getSupabase();
+
+  const { data: userData, error: userError } =
+    await supabase.auth.getUser();
+
+  if (userError || !userData.user) {
+    throw new Error("Please log in again to save items.");
+  }
+
+  const { data, error } = await supabase
+    .from("saved_items")
+    .insert({
+      url,
+      source_type: sourceType,
+      user_id: userData.user.id,
+      created_at: new Date().toISOString(),
+    })
+    .select("id, url, source_type, title, notes, created_at")
+    .single();
+
+  if (error) {
+    if (error.code === "23505") {
+      throw new Error("You've already saved this URL.");
+    }
+
+    console.error("[saved_items] insert failed", error);
+    throw new Error("Couldn't save this URL. Please try again.");
+  }
+
+  // YouTube enrichment is intentionally best-effort.
+  // The saved URL should remain even if enrichment fails.
+  if (sourceType === "youtube") {
+    const { data: enrichmentData, error: enrichmentError } =
+      await supabase.functions.invoke("enrich-youtube", {
+        body: {
+          saved_item_id: data.id,
+        },
+      });
+
+    if (enrichmentError) {
+      console.error("[enrich-youtube] failed", enrichmentError);
+    } else {
+      console.log("[enrich-youtube] completed", enrichmentData);
+    }
+  }
+
+  return data;
+}
+
+/*export async function createSavedItem(url: string, sourceType: SourceType): Promise<SavedItem> {
   const supabase = getSupabase();
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) throw new Error("Please log in again to save items.");
@@ -56,7 +109,8 @@ export async function createSavedItem(url: string, sourceType: SourceType): Prom
     throw new Error("Couldn't save this URL. Please try again.");
   }
   return data;
-}
+}*/
+
 
 export async function deleteSavedItem(id: string): Promise<void> {
   const { error, count } = await getSupabase()
@@ -73,7 +127,7 @@ export async function deleteSavedItem(id: string): Promise<void> {
   }
 }
 /* Test the YouTube enrichment function by invoking it with a saved item ID. This function checks if the user is logged in, then calls the "enrich-youtube" Supabase function with the provided saved item ID. It handles errors and logs the result. */
-export async function testYouTubeEnrichment(savedItemId: string) {
+/*export async function testYouTubeEnrichment(savedItemId: string) {
   const supabase = getSupabase();
 
   const { data: sessionData, error: sessionError } =
@@ -100,4 +154,4 @@ export async function testYouTubeEnrichment(savedItemId: string) {
   console.log("[enrich-youtube] result", data);
 
   return data;
-}
+}*/

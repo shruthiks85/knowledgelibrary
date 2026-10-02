@@ -158,12 +158,13 @@ function Library() {
   setSaving(true);
 
   try {
-    const item = await createSavedItem(parsed.url, parsed.sourceType);
-
-    if (parsed.sourceType === "youtube") {
+    
+    await createSavedItem(parsed.url, parsed.sourceType);
+    /*if (parsed.sourceType === "youtube") {
       const enrichmentResult = await testYouTubeEnrichment(item.id);
       console.log("YouTube enrichment result:", enrichmentResult);
-    }
+    }*/
+    
 
     setInput("");
     setSaved(true);
